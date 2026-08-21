@@ -34,7 +34,7 @@ Content-Type: application/json
 }
 
 ### Paste patient token here
-@patientToken = PASTE_PATIENT_TOKEN_HERE
+@patientToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGV4LnBhdGllbnRAZXhhbXBsZS5jb20iLCJyb2xlIjoiUEFUSUVOVCIsImlzcyI6ImNsaW5pYy1hcHBvaW50bWVudC1iYWNrZW5kIiwibmFtZSI6IkFsZXggUGF0aWVudCIsImV4cCI6MTc4NzMwMzg5NCwiaWF0IjoxNzg3MzAwMjk0LCJ1c2VySWQiOiI2YTg4MDk5NGQ2ZTEzYTg5MjFmMDU2NWMifQ.xIbDnu5VC8HdHRzx9H1RkFTX0tLrptrt0fgppJFg36c
 
 
 ### 3. Login as the seeded admin (paste the returned token into @adminToken below)
@@ -47,7 +47,7 @@ Content-Type: application/json
 }
 
 ### Paste admin token here
-@adminToken = PASTE_ADMIN_TOKEN_HERE
+@adminToken = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsInJvbGUiOiJBRE1JTiIsImlzcyI6ImNsaW5pYy1hcHBvaW50bWVudC1iYWNrZW5kIiwibmFtZSI6IkNsaW5pYyBBZG1pbiIsImV4cCI6MTc4NzMwMzkwOSwiaWF0IjoxNzg3MzAwMzA5LCJ1c2VySWQiOiI2YTg4MDU2ZWMxMGE5N2M0NmE3ZThmOWEifQ.EbQnpFNMii3I2RSwp2cNQ7j9G0JsWI5qsrzPL_Z_lmg
 
 
 ### =========================================================
@@ -71,7 +71,7 @@ Content-Type: application/json
 }
 
 ### Paste the created service's "id" here for the requests below
-@serviceId = PASTE_SERVICE_ID_HERE
+@serviceId = 6a8809ead6e13a8921f0565d
 
 
 ### 6. Patient trying to create a service should be blocked (expect 403)
@@ -115,7 +115,7 @@ Content-Type: application/json
 }
 
 ### Paste the created appointment's "id" here
-@appointmentId = PASTE_APPOINTMENT_ID_HERE
+@appointmentId = 6a880a08d6e13a8921f0565e
 
 
 ### 9. Business rule check: booking the SAME slot again should fail (expect 400)
