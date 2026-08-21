@@ -1,0 +1,201 @@
+### Clinic Appointment System - manual test flow
+### Uses the VS Code "REST Client" extension.
+### After each login request, copy the "token" value from the response
+### into the matching @xxxToken variable below, then run the requests in order.
+
+@baseUrl = http://localhost:8080
+
+### 0. Health check (public, no token needed)
+GET {{baseUrl}}/api/health
+
+
+### =========================================================
+### AUTH
+### =========================================================
+
+### 1. Register a new patient
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Alex Patient",
+  "email": "alex.patient@example.com",
+  "password": "Patient@12345"
+}
+
+
+### 2. Login as the patient (paste the returned token into @patientToken below)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alex.patient@example.com",
+  "password": "Patient@12345"
+}
+
+### Paste patient token here
+@patientToken = PASTE_PATIENT_TOKEN_HERE
+
+
+### 3. Login as the seeded admin (paste the returned token into @adminToken below)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin@12345"
+}
+
+### Paste admin token here
+@adminToken = PASTE_ADMIN_TOKEN_HERE
+
+
+### =========================================================
+### SERVICES (main entity) - admin manages, both roles can view
+### =========================================================
+
+### 4. Patient/Admin: list services (empty at first)
+GET {{baseUrl}}/api/services
+Authorization: Bearer {{patientToken}}
+
+
+### 5. Admin: create a service
+POST {{baseUrl}}/api/services
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "General Consultation",
+  "description": "Standard GP consultation",
+  "durationMinutes": 30
+}
+
+### Paste the created service's "id" here for the requests below
+@serviceId = PASTE_SERVICE_ID_HERE
+
+
+### 6. Patient trying to create a service should be blocked (expect 403)
+POST {{baseUrl}}/api/services
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "name": "Should Fail",
+  "description": "Patients cannot create services",
+  "durationMinutes": 15
+}
+
+
+### 7. Admin: update the service
+PUT {{baseUrl}}/api/services/{{serviceId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "General Consultation",
+  "description": "Standard GP consultation - 30 minutes",
+  "durationMinutes": 30,
+  "active": true
+}
+
+
+### =========================================================
+### APPOINTMENTS (action/transaction entity)
+### =========================================================
+
+### 8. Patient: book an appointment (future date required)
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDateTime": "2026-09-01T10:00:00",
+  "notes": "First visit"
+}
+
+### Paste the created appointment's "id" here
+@appointmentId = PASTE_APPOINTMENT_ID_HERE
+
+
+### 9. Business rule check: booking the SAME slot again should fail (expect 400)
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDateTime": "2026-09-01T10:00:00",
+  "notes": "Should be rejected - slot already booked"
+}
+
+
+### 10. Business rule check: booking a PAST date should fail (expect 400)
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDateTime": "2020-01-01T10:00:00",
+  "notes": "Should be rejected - in the past"
+}
+
+
+### 11. Patient: view own appointments ("My Records")
+GET {{baseUrl}}/api/appointments/me
+Authorization: Bearer {{patientToken}}
+
+
+### 12. Patient trying to list ALL appointments should be blocked (expect 403)
+GET {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+
+
+### 13. Admin: view all appointments
+GET {{baseUrl}}/api/appointments
+Authorization: Bearer {{adminToken}}
+
+
+### 14. Admin: confirm the appointment
+PUT {{baseUrl}}/api/appointments/{{appointmentId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "CONFIRMED"
+}
+
+
+### 15. Patient: cancel their own appointment
+PUT {{baseUrl}}/api/appointments/{{appointmentId}}/cancel
+Authorization: Bearer {{patientToken}}
+
+
+### 16. Business rule check: the same slot can now be re-booked (cancelling freed it)
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDateTime": "2026-09-01T10:00:00",
+  "notes": "Re-booking the freed slot"
+}
+
+
+### 17. Admin: deactivate the service (soft delete)
+DELETE {{baseUrl}}/api/services/{{serviceId}}
+Authorization: Bearer {{adminToken}}
+
+
+### 18. Booking a now-inactive service should fail (expect 400)
+POST {{baseUrl}}/api/appointments
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "serviceId": "{{serviceId}}",
+  "appointmentDateTime": "2026-09-02T10:00:00",
+  "notes": "Should be rejected - service inactive"
+}

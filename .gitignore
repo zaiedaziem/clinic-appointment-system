@@ -1,0 +1,55 @@
+# =========================================================
+# Clinic Appointment System .gitignore
+# Java 21, Spring Boot, React/Vite, MongoDB, Docker
+# =========================================================
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Java / Maven build output
+*.class
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot local/secret config
+application-local.properties
+application-local.yml
+application-secrets.properties
+application-secrets.yml
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.keystore
+
+# Node / React frontend
+node_modules/
+npm-debug.log*
+dist/
+.vite/
+coverage/
+.eslintcache
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Logs
+logs/
+*.log
+
+# Docker local overrides
+docker-compose.override.yml
+compose.override.yml
