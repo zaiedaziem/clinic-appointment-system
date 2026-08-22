@@ -1,6 +1,7 @@
 package com.example.clinic.controller;
 
 import com.example.clinic.dto.CreateServiceRequest;
+import com.example.clinic.dto.PagedResponse;
 import com.example.clinic.dto.ServiceResponse;
 import com.example.clinic.dto.UpdateServiceRequest;
 import com.example.clinic.service.ServiceCatalogService;
@@ -24,9 +25,16 @@ public class ServiceCatalogController {
         this.serviceCatalogService = serviceCatalogService;
     }
 
-    @GetMapping
-    public List<ServiceResponse> listAll() {
-        return serviceCatalogService.listAll();
+        @GetMapping
+    public PagedResponse<ServiceResponse> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return serviceCatalogService.search(q, active, sortBy, direction, page, size);
     }
 
     @GetMapping("/{id}")
@@ -50,6 +58,14 @@ public class ServiceCatalogController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deactivate(@PathVariable String id) {
         serviceCatalogService.deactivate(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Separate endpoint for a true permanent delete - only succeeds if the
+    // service is already inactive (enforced in ServiceCatalogService).
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        serviceCatalogService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

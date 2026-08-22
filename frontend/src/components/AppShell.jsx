@@ -18,6 +18,7 @@ export default function AppShell() {
         <div className="app-header-left">
           <span className="app-title">Clinic Appointment System</span>
           <nav className="app-nav">
+            {isAdmin && <NavLink to="/admin/dashboard">Dashboard</NavLink>}
             <NavLink to="/services">Services</NavLink>
             <NavLink to="/my-appointments">My Appointments</NavLink>
             {isAdmin && <NavLink to="/admin/services">Manage Services</NavLink>}

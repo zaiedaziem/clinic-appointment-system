@@ -2,6 +2,7 @@ package com.example.clinic.controller;
 
 import com.example.clinic.dto.AppointmentResponse;
 import com.example.clinic.dto.CreateAppointmentRequest;
+import com.example.clinic.dto.PagedResponse;
 import com.example.clinic.dto.UpdateAppointmentStatusRequest;
 import com.example.clinic.service.AppointmentService;
 import jakarta.validation.Valid;
@@ -11,8 +12,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 // All endpoints here require PATIENT or ADMIN (see SecurityConfig for the base path rule).
 // Fine-grained checks (own record vs admin, admin-only actions) happen here and in
@@ -41,17 +40,26 @@ public class AppointmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // "My Records" page
+    // "My Records" page - paginated
     @GetMapping("/me")
-    public List<AppointmentResponse> listOwn(@AuthenticationPrincipal Jwt jwt) {
-        return appointmentService.listOwn(jwt.getClaimAsString("userId"));
+    public PagedResponse<AppointmentResponse> listOwn(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return appointmentService.listOwn(jwt.getClaimAsString("userId"), page, size);
     }
 
-    // Admin: view all appointment records
+    // Admin: view all appointment records, optionally filtered by status - paginated
     @GetMapping
-    public List<AppointmentResponse> listAll(@AuthenticationPrincipal Jwt jwt) {
+    public PagedResponse<AppointmentResponse> listAll(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
         requireAdmin(jwt);
-        return appointmentService.listAll();
+        return appointmentService.listAll(status, page, size);
     }
 
     @GetMapping("/{id}")

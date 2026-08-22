@@ -1,4 +1,4 @@
-import { apiRequest } from './httpClient.js';
+import { apiRequest, buildQuery } from './httpClient.js';
 
 // Every backend endpoint the frontend calls, in one place.
 // Pages/components never call fetch() directly - they call these functions.
@@ -11,8 +11,8 @@ export function loginRequest(email, password) {
   return apiRequest('/api/auth/login', { method: 'POST', body: { email, password } });
 }
 
-export function fetchServices(token) {
-  return apiRequest('/api/services', { token });
+export function fetchServices(token, params = {}) {
+  return apiRequest(`/api/services${buildQuery(params)}`, { token });
 }
 
 export function createService(token, service) {
@@ -27,16 +27,24 @@ export function deactivateService(token, id) {
   return apiRequest(`/api/services/${id}`, { method: 'DELETE', token });
 }
 
+export function deleteServicePermanently(token, id) {
+  return apiRequest(`/api/services/${id}/permanent`, { method: 'DELETE', token });
+}
+
+export function fetchDashboard(token) {
+  return apiRequest('/api/reports/dashboard', { token });
+}
+
 export function createAppointment(token, appointment) {
   return apiRequest('/api/appointments', { method: 'POST', token, body: appointment });
 }
 
-export function fetchMyAppointments(token) {
-  return apiRequest('/api/appointments/me', { token });
+export function fetchMyAppointments(token, params = {}) {
+  return apiRequest(`/api/appointments/me${buildQuery(params)}`, { token });
 }
 
-export function fetchAllAppointments(token) {
-  return apiRequest('/api/appointments', { token });
+export function fetchAllAppointments(token, params = {}) {
+  return apiRequest(`/api/appointments${buildQuery(params)}`, { token });
 }
 
 export function cancelAppointment(token, id) {

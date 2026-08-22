@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fetchMyAppointments, cancelAppointment } from '../services/api.js';
+import PaginationControls from '../components/PaginationControls.jsx';
+
+const PAGE_SIZE = 5;
 
 const STATUS_CLASS = {
   PENDING: 'badge-pending',
@@ -12,21 +15,24 @@ export default function MyAppointmentsPage() {
   const { token } = useAuth();
 
   const [appointments, setAppointments] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     loadAppointments();
-  }, []);
+  }, [page]);
 
   async function loadAppointments() {
     setLoading(true);
     setError('');
 
     try {
-      const data = await fetchMyAppointments(token);
-      setAppointments(data);
+      const data = await fetchMyAppointments(token, { page, size: PAGE_SIZE });
+      setAppointments(data.content);
+      setTotalPages(data.totalPages);
     } catch (err) {
       setError(err.message || 'Failed to load your appointments.');
     } finally {
@@ -96,6 +102,8 @@ export default function MyAppointmentsPage() {
           </tbody>
         </table>
       )}
+
+      <PaginationControls page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

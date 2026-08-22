@@ -1,15 +1,23 @@
 :root {
-  font-family: system-ui, -apple-system, sans-serif;
-  color-scheme: light;
-  --color-bg: #f5f7fa;
-  --color-surface: #ffffff;
-  --color-border: #d7dde5;
-  --color-text: #1f2937;
-  --color-muted: #6b7280;
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-danger: #dc2626;
-  --color-success: #16a34a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+
+  /* Mid-tone slate background with a soft indigo primary - dark but not
+     near-black, and pastel badges become translucent tints instead. */
+  --color-bg: #1c2030;
+  --color-surface: #262b3f;
+  --color-surface-hover: #2f3549;
+  --color-border: #3b4258;
+  --color-text: #e7e9f0;
+  --color-muted: #9aa0b8;
+  --color-primary: #818cf8;
+  --color-primary-hover: #a5b1fb;
+  --color-primary-soft: rgba(129, 140, 248, 0.14);
+  --color-danger: #fb7185;
+  --color-danger-soft: rgba(251, 113, 133, 0.12);
+  --color-success: #4ade80;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 * {
@@ -18,58 +26,134 @@
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background:
+    radial-gradient(circle at top left, rgba(129, 140, 248, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.06) 0%, transparent 45%),
+    var(--color-bg);
+  background-attachment: fixed;
   color: var(--color-text);
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
 button {
   cursor: pointer;
   border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
   background: var(--color-primary);
-  color: white;
+  color: #10121a;
   font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
 button:hover {
   background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 button:disabled {
-  background: var(--color-muted);
+  background: #3a3f52;
+  color: var(--color-muted);
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 button.secondary {
   background: var(--color-surface);
   color: var(--color-text);
   border: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+button.secondary:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-primary-hover);
 }
 
 button.danger {
   background: var(--color-danger);
+  color: #10121a;
+}
+
+button.danger:hover {
+  background: #fda4af;
 }
 
 input, select, textarea {
-  padding: 0.5rem;
+  padding: 0.55rem 0.7rem;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
   font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-muted);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 label {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.9rem;
+  gap: 0.3rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: var(--color-text);
+}
+
+.back-button {
+  /* Parent forms are flex columns with align-items: stretch by default,
+     which would otherwise stretch this button full-width and make its
+     text look centered - align-self overrides that just for this button. */
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  color: var(--color-muted);
+  padding: 0.25rem 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  box-shadow: none;
+}
+
+.back-button:hover {
+  background: transparent;
+  color: var(--color-primary-hover);
+  box-shadow: none;
+  transform: none;
 }
 
 .error-message {
   color: var(--color-danger);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  background: var(--color-danger-soft);
+  border: 1px solid rgba(251, 113, 133, 0.3);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
 }
 
 /* ---- Auth pages (login/register) ---- */
@@ -79,15 +163,17 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem;
 }
 
 .auth-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 2rem;
+  border-radius: 16px;
+  padding: 2.25rem;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
+  box-shadow: var(--shadow-md);
 }
 
 .auth-subtitle {
@@ -98,13 +184,20 @@ label {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
   margin-top: 1.5rem;
 }
 
 .auth-switch {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.auth-switch a {
+  color: var(--color-primary-hover);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .auth-help {
@@ -129,36 +222,48 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1rem 2rem;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .app-header-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.5rem;
 }
 
 .app-title {
   font-weight: 700;
+  color: var(--color-primary-hover);
 }
 
 .app-nav {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .app-nav a {
   color: var(--color-muted);
   text-decoration: none;
   font-size: 0.9rem;
-  padding: 0.25rem 0;
+  font-weight: 500;
+  padding: 0.35rem 0;
   border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-nav a:hover {
+  color: var(--color-text);
 }
 
 .app-nav a.active {
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
+  font-weight: 700;
   border-bottom-color: var(--color-primary);
 }
 
@@ -175,7 +280,7 @@ label {
 
 .app-content {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   max-width: 1000px;
   width: 100%;
   margin: 0 auto;
@@ -187,67 +292,99 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.page-header h1 {
+  margin: 0;
 }
 
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.1rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #383e54;
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 th, td {
   text-align: left;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.85rem 1.1rem;
   font-size: 0.9rem;
 }
 
 th {
-  background: var(--color-bg);
-  font-weight: 600;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-tr:last-child td {
-  border-bottom: none;
+tbody tr {
+  transition: background 0.1s ease;
+}
+
+tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+tbody tr:hover {
+  background: var(--color-surface-hover);
 }
 
 .badge {
   display: inline-block;
-  padding: 0.15rem 0.6rem;
+  padding: 0.2rem 0.7rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .badge-pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
 }
 
 .badge-confirmed {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
 }
 
 .badge-cancelled {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(251, 113, 133, 0.15);
+  color: #fb7185;
 }
 
 .empty-state {
   color: var(--color-muted);
   text-align: center;
-  padding: 2rem;
+  padding: 2.5rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: 14px;
 }

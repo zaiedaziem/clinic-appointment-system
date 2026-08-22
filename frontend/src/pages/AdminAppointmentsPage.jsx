@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fetchAllAppointments, updateAppointmentStatus, cancelAppointment } from '../services/api.js';
+import PaginationControls from '../components/PaginationControls.jsx';
+
+const PAGE_SIZE = 5;
 
 const STATUS_CLASS = {
   PENDING: 'badge-pending',
@@ -12,26 +15,35 @@ export default function AdminAppointmentsPage() {
   const { token } = useAuth();
 
   const [appointments, setAppointments] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(0);
+  const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     loadAppointments();
-  }, []);
+  }, [status, page]);
 
   async function loadAppointments() {
     setLoading(true);
     setError('');
 
     try {
-      const data = await fetchAllAppointments(token);
-      setAppointments(data);
+      const data = await fetchAllAppointments(token, { status, page, size: PAGE_SIZE });
+      setAppointments(data.content);
+      setTotalPages(data.totalPages);
     } catch (err) {
       setError(err.message || 'Failed to load appointments.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleStatusFilterChange(value) {
+    setStatus(value);
+    setPage(0); // reset to page 1 whenever the filter changes
   }
 
   async function handleConfirm(id) {
@@ -56,20 +68,33 @@ export default function AdminAppointmentsPage() {
     }
   }
 
-  if (loading) return <p>Loading appointments...</p>;
-  if (error) return <p className="error-message">{error}</p>;
-
   return (
     <div>
       <div className="page-header">
         <h1>All Appointments</h1>
       </div>
 
+      <div className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+        <label>
+          Filter by status
+          <select value={status} onChange={(event) => handleStatusFilterChange(event.target.value)}>
+            <option value="">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </label>
+      </div>
+
+      {loading && <p>Loading appointments...</p>}
+      {error && <p className="error-message">{error}</p>}
       {actionError && <p className="error-message">{actionError}</p>}
 
-      {appointments.length === 0 && <p className="empty-state">No appointments yet.</p>}
+      {!loading && !error && appointments.length === 0 && (
+        <p className="empty-state">No appointments match this filter.</p>
+      )}
 
-      {appointments.length > 0 && (
+      {!loading && appointments.length > 0 && (
         <table>
           <thead>
             <tr>
@@ -106,6 +131,8 @@ export default function AdminAppointmentsPage() {
           </tbody>
         </table>
       )}
+
+      <PaginationControls page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 }

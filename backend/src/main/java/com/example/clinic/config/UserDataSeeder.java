@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
@@ -14,7 +15,10 @@ public class UserDataSeeder {
 
     private static final Logger logger = LoggerFactory.getLogger(UserDataSeeder.class);
 
+    // Runs before ServiceDataSeeder/AppointmentDataSeeder - AppointmentDataSeeder
+    // needs a real patient user to already exist to attach appointments to.
     @Bean
+    @Order(1)
     CommandLineRunner seedUsers(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             createUserIfMissing(
@@ -24,6 +28,15 @@ public class UserDataSeeder {
                     "admin@example.com",
                     "Admin@12345",
                     "ADMIN"
+            );
+
+            createUserIfMissing(
+                    appUserRepository,
+                    passwordEncoder,
+                    "Ahmad Faiz",
+                    "ahmadfaiz@example.com",
+                    "Patient@12345",
+                    "PATIENT"
             );
         };
     }

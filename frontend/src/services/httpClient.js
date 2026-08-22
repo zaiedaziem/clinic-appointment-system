@@ -30,9 +30,35 @@ export async function apiRequest(path, options = {}) {
       window.location.href = '/login';
     }
 
-    const message = responseBody?.message || `Request failed with status ${response.status}`;
-    throw new Error(message);
+    throw new Error(buildErrorMessage(responseBody, response.status));
   }
 
   return responseBody;
+}
+
+// The backend's GlobalExceptionHandler returns a generic top-level "message"
+// (e.g. "Validation failed") PLUS a detailed "errors" array with the actual
+// per-field reason (e.g. "Appointment date/time must be in the future").
+// Using only the top-level message hides the real reason from the user -
+// this builds the specific, readable version instead.
+function buildErrorMessage(responseBody, status) {
+  if (responseBody?.errors?.length > 0) {
+    return responseBody.errors.map((e) => e.message).join('; ');
+  }
+
+  if (responseBody?.message) {
+    return responseBody.message;
+  }
+
+  return `Request failed with status ${status}`;
+}
+
+// Builds a "?key=value&..." string from a params object, skipping any
+// key with an empty/undefined value - shared by every paginated list call.
+export function buildQuery(params = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== '')
+  ).toString();
+
+  return query ? `?${query}` : '';
 }

@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function LoginPage() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, user, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -11,12 +11,16 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Send the user back to wherever ProtectedRoute intercepted them from,
-  // or /services by default if they came straight to /login.
-  const redirectTo = location.state?.from?.pathname || '/services';
+  // Admins land on their dashboard, patients land on the services list -
+  // unless ProtectedRoute sent them here from somewhere specific, in which
+  // case they go back to exactly where they were trying to go.
+  function resolveRedirect(role) {
+    const fallback = role === 'ADMIN' ? '/admin/dashboard' : '/services';
+    return location.state?.from?.pathname || fallback;
+  }
 
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    return <Navigate to={resolveRedirect(user?.role)} replace />;
   }
 
   async function handleSubmit(event) {
@@ -25,8 +29,8 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login(email, password);
-      navigate(redirectTo, { replace: true });
+      const result = await login(email, password);
+      navigate(resolveRedirect(result.user.role), { replace: true });
     } catch (err) {
       setError(err.message || 'Login failed. Check your email and password.');
     } finally {
@@ -73,8 +77,10 @@ export default function LoginPage() {
         </p>
 
         <div className="auth-help">
-          <strong>Seeded admin account</strong>
-          <span>admin@example.com / Admin@12345</span>
+          <strong>Seeded accounts</strong>
+          <span>Admin: admin@example.com / Admin@12345</span>
+          <span>Patient 1: alex.patient@example.com / Patient@12345</span>
+          <span>Patient 2: ahmadfaiz@example.com / Patient@12345</span>
         </div>
       </section>
     </main>

@@ -2,6 +2,7 @@ package com.example.clinic.service;
 
 import com.example.clinic.dto.AppointmentResponse;
 import com.example.clinic.dto.CreateAppointmentRequest;
+import com.example.clinic.dto.PagedResponse;
 import com.example.clinic.dto.UpdateAppointmentStatusRequest;
 import com.example.clinic.exception.BusinessRuleViolationException;
 import com.example.clinic.exception.ResourceNotFoundException;
@@ -9,6 +10,9 @@ import com.example.clinic.model.Appointment;
 import com.example.clinic.model.AppointmentStatus;
 import com.example.clinic.model.ClinicService;
 import com.example.clinic.repository.AppointmentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -68,20 +72,32 @@ public class AppointmentService {
         return toResponse(appointmentRepository.save(appointment));
     }
 
-    // "My Records" - a patient's own appointments only
-    public List<AppointmentResponse> listOwn(String patientId) {
-        return appointmentRepository.findByPatientId(patientId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    // "My Records" - a patient's own appointments only, newest first, paginated
+    public PagedResponse<AppointmentResponse> listOwn(String patientId, int page, int size) {
+        Page<Appointment> result = appointmentRepository.findByPatientId(
+                patientId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appointmentDateTime")));
+
+        return toPagedResponse(result, page, size);
     }
 
-    // Admin: all appointment records
-    public List<AppointmentResponse> listAll() {
-        return appointmentRepository.findAll()
+    // Admin: all appointment records, optionally filtered by status, paginated
+    public PagedResponse<AppointmentResponse> listAll(String status, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appointmentDateTime"));
+
+        Page<Appointment> result = (status != null && !status.isBlank())
+                ? appointmentRepository.findByStatus(status, pageable)
+                : appointmentRepository.findAll(pageable);
+
+        return toPagedResponse(result, page, size);
+    }
+
+    private PagedResponse<AppointmentResponse> toPagedResponse(Page<Appointment> result, int page, int size) {
+        List<AppointmentResponse> content = result.getContent()
                 .stream()
                 .map(this::toResponse)
                 .toList();
+
+        return new PagedResponse<>(content, page, size, result.getTotalElements(), result.getTotalPages());
     }
 
     public AppointmentResponse getById(String id, String callerId, boolean isAdmin) {
